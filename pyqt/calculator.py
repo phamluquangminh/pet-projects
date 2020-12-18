@@ -86,5 +86,4 @@ class MainWindow(qtw.QWidget):
 
 app = qtw.QApplication([])
 mw = MainWindow()
-# app.setStyle(qtw.QStyleFactory.create('Fusion'))
 app.exec_()
