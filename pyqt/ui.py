@@ -1,11 +1,12 @@
 import sys
 from PyQt5 import QtCore, QtWidgets
 
+
 button_css = """
-background-color: #3C3C3C;
-color: #B98A5B;
-font-family: Magneto;
-font-size: 26px;
+    background-color: #3C3C3C;
+    color: #B98A5B;
+    font-family: Magneto;
+    font-size: 26px;
 """
 
 buttons = {
@@ -34,6 +35,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Set windows
         self.setFixedSize(QtCore.QSize(260, 340))
         self.setWindowTitle("Simple PyCalc")
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
 
         labelView = QtWidgets.QLabel(self, text="Python")
         labelView.setGeometry(QtCore.QRect(0, 0, 260, 80))
@@ -47,8 +49,7 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         for text, pos in buttons.items():
             buttons[text] = QtWidgets.QPushButton(text, self)
-            buttons[text].setGeometry(
-                QtCore.QRect(pos[0], pos[1], pos[2], pos[3]))
+            buttons[text].setGeometry(QtCore.QRect(pos[0], pos[1], pos[2], pos[3]))
             buttons[text].setStyleSheet(button_css)
 
 

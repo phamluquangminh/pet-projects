@@ -1,89 +1,154 @@
-from PyQt5 import QtWidgets as qtw
+import sys
+
+from functools import partial
+
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import (
+    QApplication,
+    QGridLayout,
+    QLineEdit,
+    QMainWindow,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
+
+ERROR_MSG = "ERROR"
 
 
-class MainWindow(qtw.QWidget):
-    def __init__(self) -> None:
+# Create a subclass of QMainWindow to setup the calculator's GUI
+class PyCalcUi(QMainWindow):
+    """PyCalc's View (GUI)."""
+
+    def __init__(self):
+        """View initializer."""
         super().__init__()
-        self.setWindowTitle("Calculator")
-        self.setLayout(qtw.QVBoxLayout())
-        self.show()
-        self.keypad()
-        self.temp_nums = []
-        self.fin_nums = []
+        # Set some main window's properties
+        self.setWindowTitle("PyCalc")
+        self.setFixedSize(235, 235)
+        # Set the central widget and the general layout
+        self.generalLayout = QVBoxLayout()
+        self._centralWidget = QWidget(self)
+        self.setCentralWidget(self._centralWidget)
+        self._centralWidget.setLayout(self.generalLayout)
+        # Create the display and the buttons
+        self._createDisplay()
+        self._createButtons()
 
-    def keypad(self):
-        container = qtw.QWidget()
-        container.setLayout(qtw.QGridLayout())
-        self.layout().addWidget(container)
+    def _createDisplay(self):
+        """Create the display."""
+        # Create the display widget
+        self.display = QLineEdit()
+        # Set some display's properties
+        self.display.setFixedHeight(35)
+        self.display.setAlignment(Qt.AlignRight)
+        self.display.setReadOnly(True)
+        # Add the display to the general layout
+        self.generalLayout.addWidget(self.display)
 
-        #! Button
-        result_field = qtw.QColumnView()
-        btn_result = qtw.QPushButton('=', clicked=self.func_result)
-        btn_clear = qtw.QPushButton('C', clicked=self.clear_calc)
-        btn_9 = qtw.QPushButton('9', clicked=lambda: self.num_press('9'))
-        btn_8 = qtw.QPushButton('8', clicked=lambda: self.num_press('8'))
-        btn_7 = qtw.QPushButton('7', clicked=lambda: self.num_press('7'))
-        btn_6 = qtw.QPushButton('6', clicked=lambda: self.num_press('6'))
-        btn_5 = qtw.QPushButton('5', clicked=lambda: self.num_press('5'))
-        btn_4 = qtw.QPushButton('4', clicked=lambda: self.num_press('4'))
-        btn_3 = qtw.QPushButton('3', clicked=lambda: self.num_press('3'))
-        btn_2 = qtw.QPushButton('2', clicked=lambda: self.num_press('2'))
-        btn_1 = qtw.QPushButton('1', clicked=lambda: self.num_press('1'))
-        btn_0 = qtw.QPushButton('0', clicked=lambda: self.num_press('0'))
+    def _createButtons(self):
+        """Create the buttons."""
+        self.buttons = {}
+        buttonsLayout = QGridLayout()
+        # Button text | position on the QGridLayout
+        buttons = {
+            "7": (0, 0),
+            "8": (0, 1),
+            "9": (0, 2),
+            "/": (0, 3),
+            "C": (0, 4),
+            "4": (1, 0),
+            "5": (1, 1),
+            "6": (1, 2),
+            "*": (1, 3),
+            "(": (1, 4),
+            "1": (2, 0),
+            "2": (2, 1),
+            "3": (2, 2),
+            "-": (2, 3),
+            ")": (2, 4),
+            "0": (3, 0),
+            "00": (3, 1),
+            ".": (3, 2),
+            "+": (3, 3),
+            "=": (3, 4),
+        }
+        # Create the buttons and add them to the grid layout
+        for btnText, pos in buttons.items():
+            self.buttons[btnText] = QPushButton(btnText)
+            self.buttons[btnText].setFixedSize(40, 40)
+            buttonsLayout.addWidget(self.buttons[btnText], pos[0], pos[1])
+        # Add buttonsLayout to the general layout
+        self.generalLayout.addLayout(buttonsLayout)
 
-        btn_plus = qtw.QPushButton('+', clicked=lambda: self.func_press('+'))
-        btn_mins = qtw.QPushButton('-', clicked=lambda: self.func_press('-'))
-        btn_mult = qtw.QPushButton('*', clicked=lambda: self.func_press('*'))
-        btn_divd = qtw.QPushButton('÷', clicked=lambda: self.func_press('÷'))
+    def setDisplayText(self, text):
+        """Set display's text."""
+        self.display.setText(text)
+        self.display.setFocus()
 
-        #! Adding the buttons to the layout
-        # * container.layout().addWidget(widget, row, column, rowSpan, columnSpan)
-        container.layout().addWidget(result_field, 0, 0, 1, 4)
-        container.layout().addWidget(btn_9, 2, 0, 1, 1)
-        container.layout().addWidget(btn_8, 2, 1, 1, 1)
-        container.layout().addWidget(btn_7, 2, 2, 1, 1)
-        container.layout().addWidget(btn_plus, 2, 3, 1, 1)
-        container.layout().addWidget(btn_6, 3, 0, 1, 1)
-        container.layout().addWidget(btn_5, 3, 1, 1, 1)
-        container.layout().addWidget(btn_4, 3, 2, 1, 1)
-        container.layout().addWidget(btn_mins, 3, 3, 1, 1)
-        container.layout().addWidget(btn_3, 4, 0, 1, 1)
-        container.layout().addWidget(btn_2, 4, 1, 1, 1)
-        container.layout().addWidget(btn_1, 4, 2, 1, 1)
-        container.layout().addWidget(btn_mult, 4, 3, 1, 1)
-        container.layout().addWidget(btn_0, 5, 0, 1, 1)
-        container.layout().addWidget(btn_result, 5, 1, 1, 1)
-        container.layout().addWidget(btn_clear, 5, 2, 1, 1)
-        container.layout().addWidget(btn_divd, 5, 3, 1, 1)
+    def displayText(self):
+        """Get display's text."""
+        return self.display.text()
 
-    def num_press(self, key_number):
-        self.temp_nums.append(key_number)
-        temp_string = ''.join(self.temp_nums)
-        if self.fin_nums:
-            self.result_field.setText(''.join(self.fin_nums) + temp_string)
-        else:
-            self.result_field.setText(temp_string)
-
-    def func_press(self, operator):
-        temp_string = ''.join(self.temp_nums)
-        self.fin_nums.append(temp_string)
-        self.fin_nums.append(operator)
-        self.temp_nums = []
-        self.result_field.setText(''.join(self.fin_nums))
-
-    def func_result(self):
-        fin_string = ''.join(self.fin_nums) + ''.join(self.temp_nums)
-        result_string = eval(fin_string)
-        fin_string += '='
-        fin_string += str(result_string)
-        self.result_field.setText(fin_string)
-
-    def clear_calc(self):
-        self.result_field.clear()
-        self.fin_nums = []
-        self.temp_nums = []
+    def clearDisplay(self):
+        """Clear the display."""
+        self.setDisplayText("")
 
 
-app = qtw.QApplication([])
-mw = MainWindow()
-app.exec_()
+# Create a Model to handle the calculator's operation
+def evaluateExpression(expression):
+    """Evaluate an expression."""
+    try:
+        result = str(eval(expression, {}, {}))
+    except Exception:
+        result = ERROR_MSG
+
+    return result
+
+
+# Create a Controller class to connect the GUI and the model
+class PyCalcCtrl:
+    """PyCalc's Controller."""
+
+    def __init__(self, model, view):
+        """Controller initializer."""
+        self._evaluate = model
+        self._view = view
+        # Connect signals and slots
+        self._connectSignals()
+
+    def _calculateResult(self):
+        """Evaluate expressions."""
+        result = self._evaluate(expression=self._view.displayText())
+        self._view.setDisplayText(result)
+
+    def _buildExpression(self, sub_exp):
+        """Build expression."""
+        if self._view.displayText() == ERROR_MSG:
+            self._view.clearDisplay()
+
+        expression = self._view.displayText() + sub_exp
+        self._view.setDisplayText(expression)
+
+    def _connectSignals(self):
+        """Connect signals and slots."""
+        for btnText, btn in self._view.buttons.items():
+            if btnText not in {"=", "C"}:
+                btn.clicked.connect(partial(self._buildExpression, btnText))
+
+        self._view.buttons["="].clicked.connect(self._calculateResult)
+        self._view.display.returnPressed.connect(self._calculateResult)
+        self._view.buttons["C"].clicked.connect(self._view.clearDisplay)
+
+
+if __name__ == "__main__":
+    # Create an instance of `QApplication`
+    pycalc = QApplication(sys.argv)
+    # Show the calculator's GUI
+    view = PyCalcUi()
+    view.show()
+    # Create instances of the model and the controller
+    model = evaluateExpression
+    PyCalcCtrl(model=model, view=view)
+    # Execute calculator's main loop
+    sys.exit(pycalc.exec_())
