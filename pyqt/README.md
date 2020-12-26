@@ -11,3 +11,5 @@ Formula
 ## Splash Screen
 
 Clone this repository: <https://github.com/Wanderson-Magalhaes/Splash_Screen_Python_PySide2>
+
+![splash](./img/splash.png)
